@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { copy, ROWS, ROW_NAMES, type Lang, type Status } from "./content";
+import { AnimatedCounter } from "./vendor/arc/animated-counter";
+import { ToastStack, ToastStackProvider, useToastStack } from "./vendor/arc/toast-stack";
+import { DitherGradient } from "./vendor/componentry/dither-gradient";
+import { StickyScrollCards } from "./vendor/componentry/sticky-scroll-cards";
+import { SplitFlapBoard } from "./split-flap";
 
 const EMAIL = "admin@arcane-equity.com";
 const SCORE = { before: 61, after: 98 };
@@ -23,6 +28,7 @@ function Statement({ lang }: { lang: Lang }) {
   const [resolved, setResolved] = useState(0); // rows already switched to "after"
   const [score, setScore] = useState(SCORE.before);
   const timers = useRef<number[]>([]);
+  const { toast, dismiss } = useToastStack();
 
   const clear = () => { timers.current.forEach(clearTimeout); timers.current = []; };
 
@@ -30,16 +36,21 @@ function Statement({ lang }: { lang: Lang }) {
     clear();
     setAfter(toAfter);
     const target = toAfter ? SCORE.after : SCORE.before;
+    dismiss();
     if (instant || reduced) { setResolved(toAfter ? ROWS.length : 0); setScore(target); return; }
     const from = toAfter ? 0 : ROWS.length;
-    ROWS.forEach((_, i) => {
-      timers.current.push(window.setTimeout(() => setResolved(toAfter ? i + 1 : from - i - 1), 140 + i * 170));
+    const gap = 420;
+    ROWS.forEach((r, i) => {
+      timers.current.push(window.setTimeout(() => {
+        setResolved(toAfter ? i + 1 : from - i - 1);
+        if (toAfter && r.before !== "ok") {
+          toast({ type: "success", title: copy[lang].toastTitle, description: `${r.code} · ${ROW_NAMES[lang][i]} · ${copy[lang].toastNext} ${r.dueAfter}`, duration: 3200 });
+        }
+      }, 160 + i * gap));
     });
-    const start = toAfter ? SCORE.before : SCORE.after;
-    const steps = 24;
-    for (let k = 1; k <= steps; k++) {
-      timers.current.push(window.setTimeout(() => setScore(Math.round(start + ((target - start) * k) / steps)), 140 + (k * ROWS.length * 170) / steps));
-    }
+    // the score moves in a few steps, the Arc counter rolls each digit
+    const marks = [0.35, 0.7, 1];
+    marks.forEach((m, k) => timers.current.push(window.setTimeout(() => setScore(Math.round(score + (target - score) * m)), 160 + (k + 1) * (ROWS.length * gap) / marks.length)));
   }
 
   // one orchestrated moment: the statement reconciles itself once after load
@@ -54,6 +65,7 @@ function Statement({ lang }: { lang: Lang }) {
   const late = ROWS.filter((_, i) => rowState(i) !== "ok").length;
 
   return (
+    <div className="stmt-wrap">
     <figure className="stmt" aria-label={t.title}>
       <header className="stmt-head">
         <div>
@@ -87,12 +99,14 @@ function Statement({ lang }: { lang: Lang }) {
         <span>{t.foot}</span>
         <span className="stmt-score">
           <span className="lbl">{t.score}</span>
-          <span className="val num">{score}<small>%</small></span>
+          <span className="val num"><AnimatedCounter value={score} locale="en-US" suffix="%" /></span>
           <span className="bar" aria-hidden="true"><i style={{ width: `${score}%` }} /></span>
           <span className="sr-only">{late} / {ROWS.length}</span>
         </span>
       </footer>
     </figure>
+    <ToastStack contained position="bottom-right" visibleToasts={3} hotkey={false} label={t.title} className="stmt-toasts" />
+    </div>
   );
 }
 
@@ -179,9 +193,10 @@ export default function App() {
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
   return (
-    <>
+    <ToastStackProvider duration={3200}>
       {ver.show && <VersionSwitch v={ver.v} setV={ver.setV} />}
       <div className="dark">
+        <DitherGradient className="dither" from="--dark" mid="--dark" to="--accent" version={ver.v} />
         <nav className="nav wrap" aria-label="Main">
           <a className="mark" href="#top" aria-label="Arcane">Arcane</a>
           <div className="nav-links">
@@ -245,11 +260,17 @@ export default function App() {
 
         <section className="wrap section" id="process">
           <div className="sec-head"><h2>{t.processTitle}</h2></div>
-          <ol className="timeline">
-            {t.process.map(([d, h, p]) => (
-              <li key={d}><p className="day num">{d}</p><h3>{h}</h3><p>{p}</p></li>
+          <StickyScrollCards
+            className="process-stack"
+            items={t.process.map(([d, h, p], i) => (
+              <article className="day-card" key={d}>
+                <p className="day num">{d}</p>
+                <h3>{h}</h3>
+                <p>{p}</p>
+                <span className="day-count num" aria-hidden="true">{i + 1}/{t.process.length}</span>
+              </article>
             ))}
-          </ol>
+          />
         </section>
 
         <section className="wrap section product" id="product">
@@ -258,7 +279,7 @@ export default function App() {
             <p>{t.productText}</p>
             <ul>{t.productPoints.map((x) => <li key={x}>{x}</li>)}</ul>
           </div>
-          <ProductFrame lang={lang} />
+          <SplitFlapBoard title={t.board.title} cols={t.board.cols} rows={t.board.rows} caption={t.board.caption} />
         </section>
 
         <section className="wrap section">
@@ -295,38 +316,6 @@ export default function App() {
           <p>{t.footerNote}</p>
         </footer>
       </section>
-    </>
-  );
-}
-
-function ProductFrame({ lang }: { lang: Lang }) {
-  const sk = lang === "sk";
-  const sites: [string, number, number, number][] = [
-    ["Trnava", 96, 16, 11], ["Nitra", 78, 7, 9], ["Žilina", 62, 10, 6], ["Senec", 54, 9, 5], ["Bratislava", 22, 3, 2],
-  ];
-  return (
-    <figure className="frame" aria-label="Control Tower">
-      <div className="frame-bar"><i /><i /><i /><span>Control Tower</span></div>
-      <div className="frame-body">
-        <div className="frame-kpis">
-          {[[sk ? "Zhoda" : "Compliance", "70 %"], [sk ? "Po termíne" : "Overdue", "45"], [sk ? "Do 30 dní" : "Due in 30 days", "28"], [sk ? "Bez dokladu" : "No record", "17"]].map(([l, v]) => (
-            <div key={l}><span>{l}</span><b className="num">{v}</b></div>
-          ))}
-        </div>
-        <p className="frame-h">{sk ? "Stav podľa prevádzky" : "Status by site"}</p>
-        {sites.map(([n, total, late, soon]) => (
-          <div className="frame-row" key={n}>
-            <span>{n}</span>
-            <span className="frame-bar2">
-              <i className="b-late" style={{ width: `${(late / total) * 100}%` }} />
-              <i className="b-soon" style={{ width: `${(soon / total) * 100}%` }} />
-              <i className="b-ok" style={{ width: `${((total - late - soon) / total) * 100}%` }} />
-            </span>
-            <span className="num">{late}</span>
-          </div>
-        ))}
-        <p className="frame-cap">{sk ? "Ukážka z aplikácie, fiktívna firma" : "Product screen, fictional company"}</p>
-      </div>
-    </figure>
+    </ToastStackProvider>
   );
 }

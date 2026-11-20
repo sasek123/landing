@@ -1,3 +1,4 @@
+import type { BoardRow } from "./split-flap";
 export type Lang = "sk" | "en";
 export type Status = "late" | "soon" | "ok" | "nodoc";
 
@@ -80,6 +81,21 @@ export const copy = {
       ["Deň 7–9", "Vyhodnotenie", "Porovnáme termíny, závady a doklady naprieč prevádzkami a pripravíme plán nápravy."],
       ["Deň 10", "Odovzdanie", "Správa pre vedenie, kompletný register a prístup do Control Tower."],
     ],
+    board: {
+      title: "Najbližšie revízie",
+      cols: ["Termín", "Zariadenie", "Prevádzka", "Stav"],
+      rows: [
+        { date: "18.11.", code: "NR-E-044", site: "Nitra", state: "Mešká", tone: "late" as BoardRow["tone"] },
+        { date: "24.11.", code: "TT-Z-006", site: "Trnava", state: "Potvrdená", tone: "ok" as BoardRow["tone"] },
+        { date: "27.11.", code: "NR-P-002", site: "Nitra", state: "Objednaná", tone: "soon" as BoardRow["tone"] },
+        { date: "28.11.", code: "ZA-T-011", site: "Žilina", state: "Čaká", tone: "soon" as BoardRow["tone"] },
+        { date: "02.12.", code: "SE-Z-004", site: "Senec", state: "Objednaná", tone: "soon" as BoardRow["tone"] },
+        { date: "05.12.", code: "BA-E-012", site: "Bratislava", state: "Potvrdená", tone: "ok" as BoardRow["tone"] },
+      ],
+      caption: "Ukážka z Control Tower, fiktívna firma",
+    },
+    toastTitle: "Revízia zapísaná",
+    toastNext: "ďalší termín",
     productTitle: "Jeden register pre všetky prevádzky",
     productText:
       "Control Tower nahrádza šanóny a Excel. Každé zariadenie má QR štítok, históriu revízií a otvorené závady. Vedenie vidí jedno číslo, údržba vidí, čo má urobiť tento týždeň.",
@@ -180,6 +196,21 @@ export const copy = {
       ["Days 7–9", "Assessment", "We compare deadlines, defects and records across sites and draft the remediation plan."],
       ["Day 10", "Handover", "Board report, the complete register and access to Control Tower."],
     ],
+    board: {
+      title: "Upcoming inspections",
+      cols: ["Date", "Asset", "Site", "Status"],
+      rows: [
+        { date: "18 Nov", code: "NR-E-044", site: "Nitra", state: "Overdue", tone: "late" as BoardRow["tone"] },
+        { date: "24 Nov", code: "TT-Z-006", site: "Trnava", state: "Confirmed", tone: "ok" as BoardRow["tone"] },
+        { date: "27 Nov", code: "NR-P-002", site: "Nitra", state: "Booked", tone: "soon" as BoardRow["tone"] },
+        { date: "28 Nov", code: "ZA-T-011", site: "Zilina", state: "Pending", tone: "soon" as BoardRow["tone"] },
+        { date: "02 Dec", code: "SE-Z-004", site: "Senec", state: "Booked", tone: "soon" as BoardRow["tone"] },
+        { date: "05 Dec", code: "BA-E-012", site: "Bratislava", state: "Confirmed", tone: "ok" as BoardRow["tone"] },
+      ],
+      caption: "Control Tower screen, fictional company",
+    },
+    toastTitle: "Inspection recorded",
+    toastNext: "next due",
     productTitle: "One register for every site",
     productText:
       "Control Tower replaces binders and spreadsheets. Every asset has a QR label, an inspection history and its open defects. Management sees one number; maintenance sees what to do this week.",
