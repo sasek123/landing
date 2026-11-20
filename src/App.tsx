@@ -5,9 +5,10 @@ import { ToastStack, ToastStackProvider, useToastStack } from "./vendor/arc/toas
 import { DitherGradient } from "./vendor/componentry/dither-gradient";
 import { StickyScrollCards } from "./vendor/componentry/sticky-scroll-cards";
 import { SplitFlapBoard } from "./split-flap";
-import { Building2, CalendarDays, Factory, HeartPulse, LayoutDashboard, Mail, ShieldCheck, Users, Warehouse } from "lucide-react";
-import { MagneticDock } from "@/components/ui/magnetic-dock";
-import { AppleMailTabs } from "@/components/ui/apple-mail-tabs";
+import { VelocityTabs } from "@/components/ui/velocity-tabs";
+import { ScrollRevealText } from "@/components/ui/scroll-reveal-text";
+import { SpringSlider } from "@/components/ui/spring-slider";
+import { HalftoneAreaChart } from "@/components/ui/halftone-area-chart";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -153,7 +154,7 @@ function Contact({ lang }: { lang: Lang }) {
       <Field className="sui-field"><FieldLabel>{t.form.name}</FieldLabel><Input name="name" required autoComplete="name" size="lg" /></Field>
       <Field className="sui-field"><FieldLabel>{t.form.email}</FieldLabel><Input name="email" type="email" required autoComplete="email" size="lg" /></Field>
       <Field className="sui-field"><FieldLabel>{t.form.company}</FieldLabel><Input name="company" required autoComplete="organization" size="lg" /></Field>
-      {sel("sites", t.form.sites, t.form.sitesOpts, t.form.sitesOpts[1])}
+      <SitesField lang={lang} />
       <div className="wide">{sel("role", t.form.role, t.form.roleOpts, t.form.roleOpts[0])}</div>
       <Field className="sui-field wide"><FieldLabel>{t.form.message}</FieldLabel><Textarea name="message" rows={4} /></Field>
       <div className="wide form-end">
@@ -208,7 +209,6 @@ export default function App() {
   return (
     <ToastStackProvider duration={3200}>
       {ver.show && <VersionSwitch v={ver.v} setV={ver.setV} />}
-      <SectionDock lang={lang} />
       <div className="dark">
         <DitherGradient className="dither" from="--dark" mid="--dark" to="--accent" version={ver.v} />
         <nav className="nav wrap" aria-label="Main">
@@ -250,6 +250,16 @@ export default function App() {
       </div>
 
       <main className="paper">
+        <ScrollRevealText
+          className="reveal"
+          stickyClassName="reveal-sticky"
+          textClassName="reveal-text"
+          mutedClassName="reveal-muted"
+          revealClassName="reveal-on"
+          lines={t.reveal}
+          scrollLength={220}
+          showScrollHint={false}
+        />
         <section className="wrap section" id="audit">
           <div className="sec-head">
             <h2>{t.offerTitle}</h2>
@@ -294,6 +304,7 @@ export default function App() {
             <ul>{t.productPoints.map((x) => <li key={x}>{x}</li>)}</ul>
           </div>
           <SplitFlapBoard title={t.board.title} cols={t.board.cols} rows={t.board.rows} caption={t.board.caption} />
+          <ComplianceChart lang={lang} />
         </section>
 
         <section className="wrap section" id="for">
@@ -332,17 +343,16 @@ export default function App() {
   );
 }
 
-const INDUSTRY_ICONS = [Factory, Warehouse, Building2, HeartPulse];
-
 function Industries({ lang }: { lang: Lang }) {
   const t = copy[lang];
   const [active, setActive] = useState("0");
-  const tabs = t.forItems.map(([label], i) => ({ label, value: String(i), icon: INDUSTRY_ICONS[i], activeClassName: "bg-[var(--accent)] text-[var(--on-accent)]" }));
+  const tabs = t.forItems.map(([label], i) => ({ label, value: String(i) }));
   const [, sub, equipment, finding] = t.forItems[Number(active)];
   return (
     <div className="industries">
-      <AppleMailTabs tabs={tabs} value={active} onValueChange={setActive} aria-label={t.forTitle} className="industry-tabs" />
-      <div className="industry-panel" role="tabpanel">
+      <div className="industry-scroll"><VelocityTabs tabs={tabs} value={active} onValueChange={setActive} aria-label={t.forTitle}
+        className="industry-tabs" indicatorClassName="industry-ind" tabClassName="industry-tab" /></div>
+      <div className="industry-panel" aria-live="polite">
         <p className="industry-sub">{sub}</p>
         <div className="industry-cols">
           <div><h3>{t.forLabels.equipment}</h3><p>{equipment}</p></div>
@@ -353,33 +363,43 @@ function Industries({ lang }: { lang: Lang }) {
   );
 }
 
-function SectionDock({ lang }: { lang: Lang }) {
-  const d = copy[lang].dock;
-  const [show, setShow] = useState(false);
-  const [current, setCurrent] = useState("");
+const CHART = [0.61, 0.64, 0.7, 0.74, 0.79, 0.83, 0.86, 0.9, 0.92, 0.94, 0.96, 0.97, 0.98];
+
+function ComplianceChart({ lang }: { lang: Lang }) {
+  const c = copy[lang].chart;
+  const v = useVersion().v;
+  const [colors, setColors] = useState<string[]>(["#d8cfbd", "#17140f"]);
   useEffect(() => {
-    const ids = ["audit", "process", "product", "for", "contact"];
-    const onScroll = () => {
-      setShow(window.scrollY > window.innerHeight * 0.8);
-      let cur = "";
-      for (const id of ids) { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < window.innerHeight * 0.45) cur = id; }
-      setCurrent(cur);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-  const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-  const items = [
-    { id: "audit", label: d.audit, icon: <ShieldCheck /> },
-    { id: "process", label: d.process, icon: <CalendarDays /> },
-    { id: "product", label: d.product, icon: <LayoutDashboard /> },
-    { id: "for", label: d.for, icon: <Users /> },
-    { id: "contact", label: d.contact, icon: <Mail /> },
-  ].map((x) => ({ ...x, isActive: current === x.id, onClick: () => go(x.id) }));
+    const cs = getComputedStyle(document.documentElement);
+    setColors([cs.getPropertyValue("--paper-deep").trim() || "#d8cfbd", cs.getPropertyValue("--accent-on-paper").trim() || "#17140f"]);
+  }, [v]);
   return (
-    <nav className={"dock-wrap sui-dark" + (show ? " on" : "")} aria-label="Sections" aria-hidden={!show}>
-      <MagneticDock items={items} iconSize={44} maxScale={1.45} magneticDistance={120} variant="glass" />
-    </nav>
+    <figure className="chart">
+      <figcaption><h3>{c.title}</h3><p>{c.note}</p></figcaption>
+      <HalftoneAreaChart
+        key={colors.join()}
+        data={CHART.map((value, i) => ({ label: `${c.weeks}${i}`, value }))}
+        height={170}
+        colors={colors}
+        format={{ style: "percent", maximumFractionDigits: 0 }}
+        locales={lang === "sk" ? "sk-SK" : "en-GB"}
+        label={c.title}
+        seriesName={c.title}
+        vsLabel={c.vs}
+      />
+    </figure>
+  );
+}
+
+function SitesField({ lang }: { lang: Lang }) {
+  const t = copy[lang];
+  const [n, setN] = useState(3);
+  return (
+    <div className="sui-field sites-field">
+      <div className="sites-head"><span>{t.form.sites}</span><output className="num">{t.sitesHint(n)}</output></div>
+      <input type="hidden" name="sites" value={t.sitesHint(n)} />
+      <SpringSlider aria-label={t.form.sites} min={1} max={30} step={1} value={n} onValueChange={setN}
+        ticks={false} renderTooltip={(x) => t.sitesHint(x)} valueText={(x) => t.sitesHint(x)} className="sites-slider" />
+    </div>
   );
 }

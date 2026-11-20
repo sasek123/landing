@@ -99,6 +99,13 @@ export const copy = {
     productTitle: "Jeden register pre všetky prevádzky",
     productText:
       "Control Tower nahrádza šanóny a Excel. Každé zariadenie má QR štítok, históriu revízií a otvorené závady. Vedenie vidí jedno číslo, údržba vidí, čo má urobiť tento týždeň.",
+    reveal: [
+      "Revízne správy ležia u piatich dodávateľov.",
+      "Termíny sú v Exceli, ktorý vedie jeden človek.",
+      "Keď príde inšpektorát, zodpovedá konateľ.",
+    ],
+    chart: { title: "Zhoda v prvom štvrťroku", note: "Ukážkové dáta. Podiel zariadení s platnou revíziou a dokladom, týždeň po týždni od auditu.", vs: "oproti", weeks: "T" },
+    sitesHint: (n: number) => (n >= 30 ? "30 a viac" : String(n)),
     productPoints: [
       "Evidencia podľa prílohy č. 4 vyhlášky 508/2009 Z. z.",
       "Prístup pre vedenie, údržbu aj externého auditora",
@@ -107,7 +114,6 @@ export const copy = {
     ],
     forTitle: "Pre koho to robíme",
     forLabels: { equipment: "Typické zariadenia", finding: "Čo najčastejšie nájdeme" },
-    dock: { audit: "Audit", process: "Postup", product: "Control Tower", for: "Pre koho", contact: "Kontakt" },
     forItems: [
       ["Výroba", "Závody so žeriavmi, kotlami a tlakovými systémami", "Mostové žeriavy, kladkostroje, parné kotly, vzdušníky kompresorov, rozvádzače a zváracie pracoviská", "Štvrťročné prehliadky žeriavov, ktoré sa medzi zmenami nestihli, a tlakové nádoby bez dokladu o poslednej skúške."],
       ["Logistika", "Sklady, rampy a vozové parky", "Vysokozdvižné vozíky, regálové zakladače, nakladacie mostíky, nabíjacie stanice", "Vozíky prenajaté alebo presunuté medzi skladmi, ktoré vypadli z evidencie aj s termínmi."],
@@ -216,6 +222,13 @@ export const copy = {
     productTitle: "One register for every site",
     productText:
       "Control Tower replaces binders and spreadsheets. Every asset has a QR label, an inspection history and its open defects. Management sees one number; maintenance sees what to do this week.",
+    reveal: [
+      "Inspection reports sit with five contractors.",
+      "Deadlines live in a spreadsheet one person keeps.",
+      "When the inspector arrives, the director answers for it.",
+    ],
+    chart: { title: "Compliance over the first quarter", note: "Sample data. Share of assets with a valid inspection and record, week by week after the audit.", vs: "vs", weeks: "W" },
+    sitesHint: (n: number) => (n >= 30 ? "30 or more" : String(n)),
     productPoints: [
       "Register structured to Annex 4 of Decree 508/2009",
       "Access for management, maintenance and external auditors",
@@ -224,7 +237,6 @@ export const copy = {
     ],
     forTitle: "Who it's for",
     forLabels: { equipment: "Typical equipment", finding: "What we usually find" },
-    dock: { audit: "Audit", process: "Process", product: "Control Tower", for: "Who it's for", contact: "Contact" },
     forItems: [
       ["Manufacturing", "Plants with cranes, boilers and pressure systems", "Overhead cranes, hoists, steam boilers, compressor air receivers, switchboards and welding stations", "Quarterly crane checks missed between shifts, and pressure vessels with no record of their last test."],
       ["Logistics", "Warehouses, docks and fleets", "Forklifts, stacker cranes, dock levellers, charging stations", "Forklifts leased or moved between warehouses that dropped out of the register, deadlines and all."],
