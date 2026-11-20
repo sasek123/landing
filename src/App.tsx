@@ -137,13 +137,50 @@ function Contact({ lang }: { lang: Lang }) {
   );
 }
 
+const VERSIONS = [
+  { id: "a", name: "A", color: "#ffd60a" },
+  { id: "b", name: "B", color: "#3d5afe" },
+  { id: "c", name: "C", color: "#2ee59d" },
+  { id: "d", name: "D", color: "#ff4a1c" },
+];
+
+function useVersion() {
+  const [v, setV] = useState(() => {
+    const q = new URLSearchParams(window.location.search).get("v");
+    return VERSIONS.some((x) => x.id === q) ? (q as string) : "a";
+  });
+  useEffect(() => {
+    document.documentElement.dataset.v = v;
+    const url = new URL(window.location.href);
+    url.searchParams.set("v", v);
+    window.history.replaceState(null, "", url);
+  }, [v]);
+  const show = /git-|localhost|127\.0\.0\.1/.test(window.location.hostname) || new URLSearchParams(window.location.search).has("review");
+  return { v, setV, show };
+}
+
+function VersionSwitch({ v, setV }: { v: string; setV: (x: string) => void }) {
+  return (
+    <div className="vswitch" role="group" aria-label="Version">
+      <span>Verzia</span>
+      {VERSIONS.map((x) => (
+        <button key={x.id} type="button" aria-pressed={v === x.id} onClick={() => setV(x.id)}>
+          <i style={{ background: x.color }} />{x.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function App() {
+  const ver = useVersion();
   const [lang, setLang] = useState<Lang>(() => (typeof navigator !== "undefined" && !navigator.language.startsWith("sk") && !navigator.language.startsWith("cs") ? "en" : "sk"));
   const t = copy[lang];
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
   return (
     <>
+      {ver.show && <VersionSwitch v={ver.v} setV={ver.setV} />}
       <div className="dark">
         <nav className="nav wrap" aria-label="Main">
           <a className="mark" href="#top" aria-label="Arcane">Arcane</a>
