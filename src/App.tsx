@@ -5,6 +5,14 @@ import { ToastStack, ToastStackProvider, useToastStack } from "./vendor/arc/toas
 import { DitherGradient } from "./vendor/componentry/dither-gradient";
 import { StickyScrollCards } from "./vendor/componentry/sticky-scroll-cards";
 import { SplitFlapBoard } from "./split-flap";
+import { Building2, CalendarDays, Factory, HeartPulse, LayoutDashboard, Mail, ShieldCheck, Users, Warehouse } from "lucide-react";
+import { MagneticDock } from "@/components/ui/magnetic-dock";
+import { AppleMailTabs } from "@/components/ui/apple-mail-tabs";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 const EMAIL = "admin@arcane-equity.com";
 const SCORE = { before: 61, after: 98 };
@@ -88,7 +96,7 @@ function Statement({ lang }: { lang: Lang }) {
           {ROWS.map((r, i) => {
             const s = rowState(i);
             return (
-              <tr key={r.code} className={s === "ok" && i < resolved && r.before !== "ok" ? "fixed" : ""}>
+              <tr key={r.code} className={s === "ok" && i < resolved && r.before !== "ok" ? "is-fixed" : ""}>
                 <td><span className="code">{r.code}</span>{ROW_NAMES[lang][i]}</td>
                 <td>{r.site}</td>
                 <td className="r num">{i < resolved ? r.dueAfter : r.due}</td>
@@ -131,20 +139,25 @@ function Contact({ lang }: { lang: Lang }) {
     window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
     setSent(true);
   }
+  const sel = (name: string, label: string, opts: string[], def: string) => (
+    <Field className="sui-field">
+      <FieldLabel>{label}</FieldLabel>
+      <Select name={name} defaultValue={def} items={opts.map((o) => ({ label: o, value: o }))}>
+        <SelectTrigger size="lg" className="w-full"><SelectValue /></SelectTrigger>
+        <SelectPopup className="sui-popup">{opts.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectPopup>
+      </Select>
+    </Field>
+  );
   return (
-    <form className="form" onSubmit={submit}>
-      <label>{t.form.name}<input name="name" required autoComplete="name" /></label>
-      <label>{t.form.email}<input name="email" type="email" required autoComplete="email" /></label>
-      <label>{t.form.company}<input name="company" required autoComplete="organization" /></label>
-      <label>{t.form.sites}
-        <select name="sites" defaultValue={t.form.sitesOpts[1]}>{t.form.sitesOpts.map((o) => <option key={o}>{o}</option>)}</select>
-      </label>
-      <label className="wide">{t.form.role}
-        <select name="role" defaultValue={t.form.roleOpts[0]}>{t.form.roleOpts.map((o) => <option key={o}>{o}</option>)}</select>
-      </label>
-      <label className="wide">{t.form.message}<textarea name="message" rows={4} /></label>
+    <form className="form sui" onSubmit={submit}>
+      <Field className="sui-field"><FieldLabel>{t.form.name}</FieldLabel><Input name="name" required autoComplete="name" size="lg" /></Field>
+      <Field className="sui-field"><FieldLabel>{t.form.email}</FieldLabel><Input name="email" type="email" required autoComplete="email" size="lg" /></Field>
+      <Field className="sui-field"><FieldLabel>{t.form.company}</FieldLabel><Input name="company" required autoComplete="organization" size="lg" /></Field>
+      {sel("sites", t.form.sites, t.form.sitesOpts, t.form.sitesOpts[1])}
+      <div className="wide">{sel("role", t.form.role, t.form.roleOpts, t.form.roleOpts[0])}</div>
+      <Field className="sui-field wide"><FieldLabel>{t.form.message}</FieldLabel><Textarea name="message" rows={4} /></Field>
       <div className="wide form-end">
-        <button className="btn btn-ink" type="submit">{t.form.submit}</button>
+        <Button type="submit" size="lg" className="sui-submit">{t.form.submit}</Button>
         {sent && <p className="sent" role="status">{t.form.sent} <a href={`mailto:${EMAIL}`}>{EMAIL}</a>.</p>}
       </div>
     </form>
@@ -195,6 +208,7 @@ export default function App() {
   return (
     <ToastStackProvider duration={3200}>
       {ver.show && <VersionSwitch v={ver.v} setV={ver.setV} />}
+      <SectionDock lang={lang} />
       <div className="dark">
         <DitherGradient className="dither" from="--dark" mid="--dark" to="--accent" version={ver.v} />
         <nav className="nav wrap" aria-label="Main">
@@ -282,11 +296,9 @@ export default function App() {
           <SplitFlapBoard title={t.board.title} cols={t.board.cols} rows={t.board.rows} caption={t.board.caption} />
         </section>
 
-        <section className="wrap section">
+        <section className="wrap section" id="for">
           <div className="sec-head"><h2>{t.forTitle}</h2></div>
-          <div className="for">
-            {t.forItems.map(([h, p]) => (<div key={h}><h3>{h}</h3><p>{p}</p></div>))}
-          </div>
+          <Industries lang={lang} />
           <div className="aside">
             <div>
               <h3>{t.partnerTitle}</h3>
@@ -301,7 +313,7 @@ export default function App() {
         </section>
       </main>
 
-      <section className="dark contact" id="contact">
+      <section className={"dark contact" + (ver.v === "d" ? "" : " sui-dark")} id="contact">
         <div className="wrap contact-in">
           <div>
             <h2>{t.contactTitle}</h2>
@@ -317,5 +329,57 @@ export default function App() {
         </footer>
       </section>
     </ToastStackProvider>
+  );
+}
+
+const INDUSTRY_ICONS = [Factory, Warehouse, Building2, HeartPulse];
+
+function Industries({ lang }: { lang: Lang }) {
+  const t = copy[lang];
+  const [active, setActive] = useState("0");
+  const tabs = t.forItems.map(([label], i) => ({ label, value: String(i), icon: INDUSTRY_ICONS[i], activeClassName: "bg-[var(--accent)] text-[var(--on-accent)]" }));
+  const [, sub, equipment, finding] = t.forItems[Number(active)];
+  return (
+    <div className="industries">
+      <AppleMailTabs tabs={tabs} value={active} onValueChange={setActive} aria-label={t.forTitle} className="industry-tabs" />
+      <div className="industry-panel" role="tabpanel">
+        <p className="industry-sub">{sub}</p>
+        <div className="industry-cols">
+          <div><h3>{t.forLabels.equipment}</h3><p>{equipment}</p></div>
+          <div><h3>{t.forLabels.finding}</h3><p>{finding}</p></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SectionDock({ lang }: { lang: Lang }) {
+  const d = copy[lang].dock;
+  const [show, setShow] = useState(false);
+  const [current, setCurrent] = useState("");
+  useEffect(() => {
+    const ids = ["audit", "process", "product", "for", "contact"];
+    const onScroll = () => {
+      setShow(window.scrollY > window.innerHeight * 0.8);
+      let cur = "";
+      for (const id of ids) { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < window.innerHeight * 0.45) cur = id; }
+      setCurrent(cur);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  const items = [
+    { id: "audit", label: d.audit, icon: <ShieldCheck /> },
+    { id: "process", label: d.process, icon: <CalendarDays /> },
+    { id: "product", label: d.product, icon: <LayoutDashboard /> },
+    { id: "for", label: d.for, icon: <Users /> },
+    { id: "contact", label: d.contact, icon: <Mail /> },
+  ].map((x) => ({ ...x, isActive: current === x.id, onClick: () => go(x.id) }));
+  return (
+    <nav className={"dock-wrap sui-dark" + (show ? " on" : "")} aria-label="Sections" aria-hidden={!show}>
+      <MagneticDock items={items} iconSize={44} maxScale={1.45} magneticDistance={120} variant="glass" />
+    </nav>
   );
 }

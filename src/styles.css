@@ -1,3 +1,48 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "tw-animate-css";
+@custom-variant dark (&:where(.sui-dark, .sui-dark *));
+
+/* Space UI tokens mapped onto this page's palette (prefixed so they never clash with ours) */
+@theme inline {
+  --color-background: var(--sui-background);
+  --color-foreground: var(--sui-foreground);
+  --color-muted: var(--sui-muted);
+  --color-muted-foreground: var(--sui-muted-foreground);
+  --color-popover: var(--sui-popover);
+  --color-popover-foreground: var(--sui-foreground);
+  --color-card: var(--sui-popover);
+  --color-card-foreground: var(--sui-foreground);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--on-accent);
+  --color-secondary: var(--sui-muted);
+  --color-secondary-foreground: var(--sui-foreground);
+  --color-accent: var(--sui-muted);
+  --color-accent-foreground: var(--sui-foreground);
+  --color-input: var(--sui-input);
+  --color-border: var(--sui-input);
+  --color-ring: var(--on-dark);
+  --color-destructive: var(--late);
+  --color-destructive-foreground: #fff;
+}
+/* Minimal preflight, only where vendored Tailwind components live (the rest of the page has its own CSS) */
+@layer base {
+  :where(.sui, .sui-popup, .dock-wrap, .industry-tabs) *, :where(.sui, .sui-popup, .dock-wrap, .industry-tabs) *::before, :where(.sui, .sui-popup, .dock-wrap, .industry-tabs) *::after { box-sizing: border-box; border: 0 solid; margin: 0; padding: 0; }
+  :where(.sui, .sui-popup, .dock-wrap, .industry-tabs) :is(input, textarea, select, button) { font: inherit; color: inherit; background-color: transparent; border-radius: 0; }
+  :where(.sui, .sui-popup, .dock-wrap, .industry-tabs) :is(button, [role="button"]) { cursor: pointer; }
+  :where(.sui) textarea { resize: vertical; }
+  :where(.sui, .sui-popup, .dock-wrap, .industry-tabs) :is(svg, img) { display: block; }
+}
+:root {
+  --sui-background: var(--dark-2);
+  --sui-foreground: var(--on-dark);
+  --sui-muted: color-mix(in srgb, var(--on-dark) 10%, var(--dark-2));
+  --sui-muted-foreground: var(--on-dark-2);
+  --sui-popover: var(--dark-2);
+  --sui-input: var(--line-dark);
+}
+
 /* Arcane — compliance infrastructure.
    Brand: deep black, parchment #E8E0D0, Syne. The page reads like a statement:
    black cover, parchment pages, ink figures. Colour is reserved for status. */
@@ -119,7 +164,7 @@ img { max-width: 100%; }
 .st-ok { color: var(--ok); }
 .st-nodoc { color: var(--late); }
 .st-nodoc::before { background: none; box-shadow: inset 0 0 0 1.5px currentColor; }
-tr.fixed td { animation: settle .6s ease-out; }
+tr.is-fixed td { animation: settle .6s ease-out; }
 @keyframes settle { from { background: rgba(62, 107, 79, .14); } to { background: transparent; } }
 .stmt-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; padding-top: 14px; font-size: 12.5px; color: var(--card-mute); }
 .stmt-score { display: grid; grid-template-columns: auto auto; align-items: baseline; gap: 2px 12px; justify-items: end; }
@@ -216,11 +261,7 @@ tr.fixed td { animation: settle .6s ease-out; }
 .direct { margin-top: 22px; }
 .direct a { color: var(--on-dark); text-underline-offset: 4px; }
 .form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.form label { display: grid; gap: 7px; font-size: 14px; color: var(--on-dark-2); }
 .form .wide { grid-column: 1 / -1; }
-.form input, .form select, .form textarea { width: 100%; font: 400 16px/1.4 var(--text); color: var(--on-dark); background: var(--dark-2); border: 1px solid var(--line-dark); border-radius: 10px; padding: 12px 14px; min-height: 48px; }
-.form input:focus, .form select:focus, .form textarea:focus { outline: none; border-color: var(--on-dark); }
-.form select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--on-dark-2) 50%), linear-gradient(135deg, var(--on-dark-2) 50%, transparent 50%); background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
 .form-end { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 4px; }
 .sent { font-size: 14px; color: var(--on-dark-2); }
 .foot { display: grid; grid-template-columns: auto 1fr; gap: 10px 24px; align-items: baseline; margin-top: clamp(64px, 8vw, 110px); padding-top: 26px; padding-bottom: 40px; position: relative; font-size: 14px; color: var(--on-dark-2); }
@@ -327,3 +368,25 @@ tr.fixed td { animation: settle .6s ease-out; }
 .stmt-meta { font-size: 12.5px; color: var(--card-mute); margin-top: 6px; }
 .stmt-head .stmt-score { align-self: center; }
 .stmt-foot { min-height: 96px; align-items: flex-start; }
+
+/* ---- v3: Space UI form, Skecher tabs, Componentry dock --------------- */
+.sui { color: var(--on-dark); }
+.sui-field { gap: 8px; }
+.sui-field label, .sui-field [data-slot="field-label"] { font-size: 14px; color: var(--on-dark-2); font-weight: 500; }
+.sui input, .sui textarea, .sui [data-slot="select-trigger"] { font-size: 16px; }
+.sui-submit { background: var(--accent) !important; color: var(--on-accent) !important; border-radius: 999px !important; padding-inline: 22px !important; height: 48px !important; font-weight: 600; font-size: 15px; }
+.sui-popup { z-index: 80; }
+
+.industries { display: grid; gap: 28px; }
+.industry-tabs { padding: 4px 2px 8px; }
+.industry-panel { border-top: 1.5px solid var(--ink); padding-top: 24px; }
+.industry-sub { font: 700 clamp(22px, 2.2vw, 30px)/1.15 var(--display); letter-spacing: -0.015em; max-width: 26em; }
+.industry-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 56px; margin-top: 22px; }
+.industry-cols h3 { font: 600 14px/1.3 var(--text); color: var(--ink-2); }
+.industry-cols p { margin-top: 8px; font-size: 17px; max-width: 32em; }
+
+.dock-wrap { position: fixed; left: 50%; bottom: 18px; z-index: 40; transform: translate(-50%, 24px); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; }
+.dock-wrap.on { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+.dock-wrap svg { width: 20px; height: 20px; }
+@media (max-width: 860px) { .dock-wrap { display: none; } }
+@media (max-width: 720px) { .industry-cols { grid-template-columns: minmax(0, 1fr); } }
