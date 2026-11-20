@@ -99,11 +99,28 @@ export const copy = {
     productTitle: "Jeden register pre všetky prevádzky",
     productText:
       "Control Tower nahrádza šanóny a Excel. Každé zariadenie má QR štítok, históriu revízií a otvorené závady. Vedenie vidí jedno číslo, údržba vidí, čo má urobiť tento týždeň.",
-    reveal: [
-      "Revízne správy ležia u piatich dodávateľov.",
-      "Termíny sú v Exceli, ktorý vedie jeden človek.",
-      "Keď príde inšpektorát, zodpovedá konateľ.",
-    ],
+    check: {
+      title: "Ako na tom ste?",
+      lead: "Päť otázok o vašej evidencii vyhradených technických zariadení. Trvá to minútu a nič neodosielate.",
+      yes: "Áno", no: "Nie",
+      qs: [
+        "Máte jeden zoznam všetkých vyhradených zariadení naprieč prevádzkami?",
+        "Nájdete do piatich minút poslednú revíznu správu ľubovoľného zariadenia?",
+        "Viete, ktorým zariadeniam končí lehota v najbližších 30 dňoch?",
+        "Máte k závadám z posledných revízií doklad o odstránení?",
+        "Stráži termíny systém, nie jeden človek a jeho Excel?",
+      ],
+      empty: "Odpovedzte na otázky a uvidíte výsledok.",
+      of: "z 5",
+      tiers: [
+        ["Pri kontrole by ste mali problém", "Bez centrálnej evidencie sa chýbajúce revízie zvyčajne zistia až pri inšpekcii alebo pri úraze. Audit ukáže, kde presne sú medzery."],
+        ["Základ máte, medzery sú pravdepodobné", "Väčšina firiem s viacerými prevádzkami končí práve tu. Audit overí zvyšok na dokladoch a pripraví plán nápravy."],
+        ["Máte to pod kontrolou", "Ak to tak vyzerá aj na papieri, audit vám to potvrdí a dostanete register, ktorý vydrží aj pri striedaní ľudí."],
+      ],
+      partial: (n: number) => `Zodpovedané ${n} z 5`,
+      use: "Použiť v dopyte",
+      summary: (yes: string[], no: string[]) => `Rýchly test: ${yes.length}/5.` + (no.length ? ` Chýba: ${no.join(" ")}` : ""),
+    },
     chart: { title: "Zhoda v prvom štvrťroku", note: "Ukážkové dáta. Podiel zariadení s platnou revíziou a dokladom, týždeň po týždni od auditu.", vs: "oproti", weeks: "T" },
     sitesHint: (n: number) => (n >= 30 ? "30 a viac" : String(n)),
     productPoints: [
@@ -222,11 +239,28 @@ export const copy = {
     productTitle: "One register for every site",
     productText:
       "Control Tower replaces binders and spreadsheets. Every asset has a QR label, an inspection history and its open defects. Management sees one number; maintenance sees what to do this week.",
-    reveal: [
-      "Inspection reports sit with five contractors.",
-      "Deadlines live in a spreadsheet one person keeps.",
-      "When the inspector arrives, the director answers for it.",
-    ],
+    check: {
+      title: "Where do you stand?",
+      lead: "Five questions about your register of regulated equipment. It takes a minute and nothing is sent.",
+      yes: "Yes", no: "No",
+      qs: [
+        "Do you have one list of every regulated asset across all sites?",
+        "Can you find the latest inspection report for any asset within five minutes?",
+        "Do you know which assets fall due in the next 30 days?",
+        "Do you have proof that defects from the last inspections were fixed?",
+        "Does a system track deadlines, not one person and their spreadsheet?",
+      ],
+      empty: "Answer the questions to see your result.",
+      of: "of 5",
+      tiers: [
+        ["An inspection would find problems", "Without a central register, missing inspections usually surface during an inspection or after an incident. The audit shows exactly where the gaps are."],
+        ["The basics are there, gaps are likely", "Most multi-site operators land here. The audit checks the rest against the documents and drafts a remediation plan."],
+        ["You have it under control", "If the paperwork agrees, the audit confirms it and you get a register that survives staff changes."],
+      ],
+      partial: (n: number) => `${n} of 5 answered`,
+      use: "Add to my request",
+      summary: (yes: string[], no: string[]) => `Quick check: ${yes.length}/5.` + (no.length ? ` Missing: ${no.join(" ")}` : ""),
+    },
     chart: { title: "Compliance over the first quarter", note: "Sample data. Share of assets with a valid inspection and record, week by week after the audit.", vs: "vs", weeks: "W" },
     sitesHint: (n: number) => (n >= 30 ? "30 or more" : String(n)),
     productPoints: [

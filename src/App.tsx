@@ -6,7 +6,6 @@ import { DitherGradient } from "./vendor/componentry/dither-gradient";
 import { StickyScrollCards } from "./vendor/componentry/sticky-scroll-cards";
 import { SplitFlapBoard } from "./split-flap";
 import { VelocityTabs } from "@/components/ui/velocity-tabs";
-import { ScrollRevealText } from "@/components/ui/scroll-reveal-text";
 import { SpringSlider } from "@/components/ui/spring-slider";
 import { HalftoneAreaChart } from "@/components/ui/halftone-area-chart";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -156,7 +155,7 @@ function Contact({ lang }: { lang: Lang }) {
       <Field className="sui-field"><FieldLabel>{t.form.company}</FieldLabel><Input name="company" required autoComplete="organization" size="lg" /></Field>
       <SitesField lang={lang} />
       <div className="wide">{sel("role", t.form.role, t.form.roleOpts, t.form.roleOpts[0])}</div>
-      <Field className="sui-field wide"><FieldLabel>{t.form.message}</FieldLabel><Textarea name="message" rows={4} /></Field>
+      <Field className="sui-field wide"><FieldLabel>{t.form.message}</FieldLabel><Textarea name="message" id="contact-message" rows={4} /></Field>
       <div className="wide form-end">
         <Button type="submit" size="lg" className="sui-submit">{t.form.submit}</Button>
         {sent && <p className="sent" role="status">{t.form.sent} <a href={`mailto:${EMAIL}`}>{EMAIL}</a>.</p>}
@@ -250,16 +249,7 @@ export default function App() {
       </div>
 
       <main className="paper">
-        <ScrollRevealText
-          className="reveal"
-          stickyClassName="reveal-sticky"
-          textClassName="reveal-text"
-          mutedClassName="reveal-muted"
-          revealClassName="reveal-on"
-          lines={t.reveal}
-          scrollLength={220}
-          showScrollHint={false}
-        />
+        <ReadinessCheck lang={lang} />
         <section className="wrap section" id="audit">
           <div className="sec-head">
             <h2>{t.offerTitle}</h2>
@@ -388,6 +378,52 @@ function ComplianceChart({ lang }: { lang: Lang }) {
         vsLabel={c.vs}
       />
     </figure>
+  );
+}
+
+function ReadinessCheck({ lang }: { lang: Lang }) {
+  const c = copy[lang].check;
+  const [ans, setAns] = useState<(boolean | null)[]>([null, null, null, null, null]);
+  const answered = ans.filter((a) => a !== null).length;
+  const score = ans.filter((a) => a === true).length;
+  const done = answered === 5;
+  const tier = score <= 2 ? 0 : score <= 4 ? 1 : 2;
+  const set = (i: number, v: string) => setAns((a) => a.map((x, j) => (j === i ? v === "y" : x)));
+  const use = () => {
+    const el = document.getElementById("contact-message") as HTMLTextAreaElement | null;
+    if (el) el.value = c.summary(c.qs.filter((_, i) => ans[i]), c.qs.filter((_, i) => ans[i] === false));
+    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => el?.focus({ preventScroll: true }), 600);
+  };
+  return (
+    <section className="wrap section check" id="check">
+      <div className="check-side">
+        <h2>{c.title}</h2>
+        <p className="check-lead">{c.lead}</p>
+        <div className={"check-result" + (done ? " t" + tier : "")} aria-live="polite">
+          <p className="check-score num"><span>{score}</span> {c.of}</p>
+          {done ? (
+            <>
+              <h3>{c.tiers[tier][0]}</h3>
+              <p>{c.tiers[tier][1]}</p>
+              <button type="button" className="btn btn-ink" onClick={use}>{c.use}</button>
+            </>
+          ) : (
+            <p className="check-wait">{answered ? c.partial(answered) : c.empty}</p>
+          )}
+        </div>
+      </div>
+      <ol className="check-qs">
+        {c.qs.map((q, i) => (
+          <li key={q} className={ans[i] === false ? "is-no" : ans[i] ? "is-yes" : ""}>
+            <p>{q}</p>
+            <VelocityTabs aria-label={q} value={ans[i] === null ? "" : ans[i] ? "y" : "n"} onValueChange={(v) => set(i, v)}
+              tabs={[{ label: c.yes, value: "y" }, { label: c.no, value: "n" }]}
+              className="yn" indicatorClassName="yn-ind" tabClassName="yn-tab" />
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 

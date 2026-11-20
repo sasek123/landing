@@ -62,8 +62,9 @@ export function VelocityTabs<T extends string>({
     const shouldReduceMotion = useReducedMotion();
     const selectedValue = value ?? uncontrolledValue;
     const requestedIndex = tabs.findIndex((tab) => tab.value === selectedValue && !tab.disabled);
+    // Arcane: a controlled value that matches no tab means "nothing selected yet".
     const selectedIndex =
-        requestedIndex >= 0 ? requestedIndex : tabs.findIndex((tab) => !tab.disabled);
+        requestedIndex >= 0 ? requestedIndex : value !== undefined ? -1 : tabs.findIndex((tab) => !tab.disabled);
     const motionIndex = Math.max(0, selectedIndex);
 
     const targetIndex = useMotionValue(motionIndex);
