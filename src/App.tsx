@@ -1,595 +1,403 @@
-import {
-  ArrowDown,
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  ChevronDown,
-  Globe2,
-  MessageCircle,
-  PhoneCall,
-  Send,
-  TerminalSquare,
-  Workflow,
-} from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { copy, ROWS, ROW_NAMES, type Lang, type Status } from "./content";
+import { AnimatedCounter } from "./vendor/arc/animated-counter";
+import { ToastStack, ToastStackProvider, useToastStack } from "./vendor/arc/toast-stack";
+import { DitherGradient } from "./vendor/componentry/dither-gradient";
+import { StickyScrollCards } from "./vendor/componentry/sticky-scroll-cards";
+import { SplitFlapBoard } from "./split-flap";
+import { VelocityTabs } from "@/components/ui/velocity-tabs";
+import { SpringSlider } from "@/components/ui/spring-slider";
+import { HalftoneAreaChart } from "@/components/ui/halftone-area-chart";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
-type Language = "sk" | "en";
+const EMAIL = "admin@arcane-equity.com";
+const SCORE = { before: 61, after: 98 };
 
-const copy = {
-  sk: {
-    nav: ["Systém", "Čo tvoríme", "Ako pracujeme"],
-    navCta: "Porozprávajme sa",
-    kicker: "Arcane / AI infraštruktúra pre firmy",
-    heroTitle: "Vaša nová recepcia",
-    heroAccent: "už nečaká na telefón.",
-    heroText:
-      "Tvoríme AI hlasových agentov, ktorí dvíhajú hovory, kvalifikujú dopyty a rezervujú prácu. K tomu chatboty pre podporu, weby a digitálne workflow, ktoré držia firmu v pohybe.",
-    primary: "Pozrieť možnosti",
-    secondary: "Ako to funguje",
-    live: "SYSTÉM V PREVÁDZKE",
-    liveStat: "Priemerné zdvihnutie",
-    systemLabel: "Nie je to demo. Je to pracovný tok.",
-    systemTitle: "Jeden nový\nhovor. Štyri hotové kroky.",
-    systemText:
-      "Od prvého zazvonenia po zapísanú objednávku. Pozrite sa, ako sa z obyčajnej otázky stane konkrétna práca bez toho, aby váš tím prerušil deň.",
-    tryIt: "Spustiť ukážkový hovor",
-    noMic: "Mikrofón netreba",
-    caller: "ZÁKAZNÍK",
-    agent: "ARCANE AI AGENT",
-    outcome: "VÝSLEDOK",
-    reset: "Resetovať",
-    showcasesLabel: "02 / ČO TVORÍME",
-    showcasesTitle: "AI tam, kde\nmá zmysel.",
-    showcasesText:
-      "Hlas je náš hlavný kanál. Nie jediný. Poskladáme vám presne taký systém, aký vaše podnikanie potrebuje dnes, s priestorom na zajtrajší rast.",
-    capabilities: [
-      {
-        icon: PhoneCall,
-        tag: "01 / HLAVNÁ SILA",
-        title: "AI hlasoví agenti",
-        text: "Dvíhajú telefón 24/7, rozumejú kontextu, odpovedajú po slovensky aj po anglicky, objednávajú a eskalujú citlivé prípady človeku.",
-        accent: "featured",
-      },
-      {
-        icon: MessageCircle,
-        tag: "02 / PODPORA",
-        title: "Chatboty pre web a support",
-        text: "Sprievodca na webe, FAQ, kvalifikácia leadov alebo interná podpora. Menej opakovaných otázok, viac vyriešených požiadaviek.",
-        accent: "",
-      },
-      {
-        icon: Globe2,
-        tag: "03 / DIGITÁLNY ZÁKLAD",
-        title: "Weby a celé workflow",
-        text: "Vieme postaviť aj web, formuláre, CRM napojenie a automatizácie. Od prvého kliknutia po uzavretú zákazku v jednom systéme.",
-        accent: "",
-      },
-    ],
-    infrastructureLabel: "03 / VLASTNÁ INFRAŠTRUKTÚRA",
-    infrastructureTitle: "Nie ste odkázaní na\nnáhodný plugin.",
-    infrastructureText:
-      "Arcane nie je ďalší widget, ktorý vám niekto vloží na web a zabudne naň. Máme vlastnú infraštruktúru a vieme vás na ňu presunúť: bezpečne, postupne a s jasným vlastníctvom toho, čo pre vás postavíme.",
-    infraPoints: [
-      "Vlastné nasadenie a monitoring",
-      "Integrácie podľa vášho stacku",
-      "Dáta a workflow pod kontrolou",
-      "Iterácie bez čakania na vendor roadmapu",
-    ],
-    migration: "Presunieme vás k nám",
-    workLabel: "04 / AKO PRACUJEME",
-    workTitle: "Najprv pochopíme\ntlak. Potom staváme.",
-    steps: [
-      ["01", "Zachytíme problém", "Kde vám unikajú hovory, čas, leady alebo odpovede?"],
-      ["02", "Navrhneme systém", "Rozhovor, web, chatbot, integrácie a jasné hranice pre AI."],
-      ["03", "Spustíme a meriame", "Najprv bezpečne. Potom zlepšujeme podľa reálnych dát."],
-    ],
-    contactLabel: "05 / ZAČNIME",
-    contactTitle: "Povedzte nám,\nčo vás dnes brzdí.",
-    contactText:
-      "Vyberte, čo potrebujete. Ozveme sa s konkrétnym prvým krokom, nie s generickou prezentáciou.",
-    formName: "Vaše meno",
-    formEmail: "Pracovný e-mail",
-    formCompany: "Firma / web",
-    formNeed: "Čo chcete vyriešiť?",
-    formMessage: "Pár viet o vašej situácii",
-    formSubmit: "Odoslať dopyt",
-    formSuccess: "Dopyt je pripravený. Otvárame váš e-mailový klient.",
-    formOptions: [
-      "AI hlasový agent",
-      "Chatbot pre podporu",
-      "Nový web",
-      "Kompletné workflow",
-      "Ešte neviem",
-    ],
-    footer: "AI hlas. Web. Systémy, ktoré robia svoju prácu.",
-  },
-  en: {
-    nav: ["System", "What we build", "How we work"],
-    navCta: "Start a conversation",
-    kicker: "Arcane / AI infrastructure for business",
-    heroTitle: "Your new front desk",
-    heroAccent: "does not wait on hold.",
-    heroText:
-      "We build AI voice agents that answer calls, qualify demand, and book work. Plus support chatbots, websites, and digital workflows that keep the whole business moving.",
-    primary: "Explore the system",
-    secondary: "How it works",
-    live: "SYSTEM LIVE",
-    liveStat: "Average pickup",
-    systemLabel: "Not a demo. A working flow.",
-    systemTitle: "One new call.\nFour finished steps.",
-    systemText:
-      "From the first ring to a structured job. See how an ordinary question becomes useful work without pulling your team out of their day.",
-    tryIt: "Start a sample call",
-    noMic: "No microphone required",
-    caller: "CALLER",
-    agent: "ARCANE AI AGENT",
-    outcome: "OUTCOME",
-    reset: "Reset",
-    showcasesLabel: "02 / WHAT WE BUILD",
-    showcasesTitle: "AI where\nit actually helps.",
-    showcasesText:
-      "Voice is our main channel. Not our only one. We compose the exact system your business needs today, with room for tomorrow's growth.",
-    capabilities: [
-      {
-        icon: PhoneCall,
-        tag: "01 / CORE STRENGTH",
-        title: "AI voice agents",
-        text: "They answer 24/7, understand context, speak naturally, book appointments, and escalate sensitive cases to a human.",
-        accent: "featured",
-      },
-      {
-        icon: MessageCircle,
-        tag: "02 / SUPPORT",
-        title: "Web and support chatbots",
-        text: "A website guide, FAQ assistant, lead qualifier, or internal support layer. Fewer repetitive questions, more resolved requests.",
-        accent: "",
-      },
-      {
-        icon: Globe2,
-        tag: "03 / DIGITAL FOUNDATION",
-        title: "Websites and workflows",
-        text: "We can build the website, forms, CRM connections, and automations too. From the first click to a closed job.",
-        accent: "",
-      },
-    ],
-    infrastructureLabel: "03 / OWN INFRASTRUCTURE",
-    infrastructureTitle: "You are not stuck with\nanother random plugin.",
-    infrastructureText:
-      "Arcane is not a widget someone drops on your site and forgets. We run our own infrastructure and can move you onto it safely, gradually, and with clear ownership of what we build for you.",
-    infraPoints: [
-      "Own deployment and monitoring",
-      "Integrations for your stack",
-      "Your data and workflows stay in control",
-      "Iteration without vendor roadmap delays",
-    ],
-    migration: "Move onto our infrastructure",
-    workLabel: "04 / HOW WE WORK",
-    workTitle: "First we understand\nthe pressure. Then we build.",
-    steps: [
-      ["01", "Find the pressure", "Where are calls, time, leads, or answers slipping away?"],
-      [
-        "02",
-        "Design the system",
-        "Conversation, web, chatbot, integrations, and clear AI boundaries.",
-      ],
-      ["03", "Launch and measure", "Start safely. Then improve from real operating data."],
-    ],
-    contactLabel: "05 / LET'S START",
-    contactTitle: "Tell us what is\nslowing you down.",
-    contactText:
-      "Choose what you need. We will come back with a concrete first step, not a generic deck.",
-    formName: "Your name",
-    formEmail: "Work email",
-    formCompany: "Company / website",
-    formNeed: "What do you need?",
-    formMessage: "A few words about your situation",
-    formSubmit: "Send inquiry",
-    formSuccess: "Your inquiry is ready. Opening your email client.",
-    formOptions: [
-      "AI voice agent",
-      "Support chatbot",
-      "New website",
-      "Complete workflow",
-      "Not sure yet",
-    ],
-    footer: "AI voice. Web. Systems that do their job.",
-  },
-} as const;
+function useReducedMotion() {
+  const [r, setR] = useState(false);
+  useEffect(() => {
+    const m = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setR(m.matches);
+    const on = () => setR(m.matches);
+    m.addEventListener("change", on);
+    return () => m.removeEventListener("change", on);
+  }, []);
+  return r;
+}
 
-const calls = {
-  sk: {
-    caller: "Dobrý deň, potrebujem servis kotla ešte dnes.",
-    reply: "Rozumiem. Overím urgentný termín a pošlem vám potvrdenie.",
-    outcome: "Urgentný servis kvalifikovaný",
-  },
-  en: {
-    caller: "Hi, I need a boiler service today.",
-    reply: "I can help. I will check the urgent schedule and send your confirmation.",
-    outcome: "Urgent service qualified",
-  },
-};
+function Statement({ lang }: { lang: Lang }) {
+  const t = copy[lang].stmt;
+  const reduced = useReducedMotion();
+  const [after, setAfter] = useState(false);
+  const [resolved, setResolved] = useState(0); // rows already switched to "after"
+  const [score, setScore] = useState(SCORE.before);
+  const timers = useRef<number[]>([]);
+  const { toast, dismiss } = useToastStack();
 
-export default function App() {
-  const [language, setLanguage] = useState<Language>("sk");
-  const [callStage, setCallStage] = useState(0);
-  const [selectedNeed, setSelectedNeed] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const t = copy[language];
-  const call = calls[language];
+  const clear = () => { timers.current.forEach(clearTimeout); timers.current = []; };
 
-  const startCall = () => {
-    setCallStage(1);
-    window.setTimeout(() => setCallStage(2), 650);
-    window.setTimeout(() => setCallStage(3), 1400);
-  };
+  function play(toAfter: boolean, instant = false) {
+    clear();
+    setAfter(toAfter);
+    const target = toAfter ? SCORE.after : SCORE.before;
+    dismiss();
+    if (instant || reduced) { setResolved(toAfter ? ROWS.length : 0); setScore(target); return; }
+    const from = toAfter ? 0 : ROWS.length;
+    const gap = 420;
+    ROWS.forEach((r, i) => {
+      timers.current.push(window.setTimeout(() => {
+        setResolved(toAfter ? i + 1 : from - i - 1);
+        if (toAfter && r.before !== "ok") {
+          toast({ type: "success", title: copy[lang].toastTitle, description: `${r.code} · ${ROW_NAMES[lang][i]} · ${copy[lang].toastNext} ${r.dueAfter}`, duration: 3200 });
+        }
+      }, 160 + i * gap));
+    });
+    // the score moves in a few steps, the Arc counter rolls each digit
+    const marks = [0.35, 0.7, 1];
+    marks.forEach((m, k) => timers.current.push(window.setTimeout(() => setScore(Math.round(score + (target - score) * m)), 160 + (k + 1) * (ROWS.length * gap) / marks.length)));
+  }
 
-  const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const subject = encodeURIComponent(`Arcane inquiry / ${data.get("company") || "new lead"}`);
-    const body = encodeURIComponent(
-      `${data.get("name")} (${data.get("email")})\nNeed: ${data.get("need")}\n\n${data.get("message")}`,
-    );
-    setSubmitted(true);
-    window.location.href = `mailto:adam.bencic1@gmail.com?subject=${subject}&body=${body}`;
-  };
+  // one orchestrated moment: the statement reconciles itself once after load
+  useEffect(() => {
+    if (reduced) return;
+    const id = window.setTimeout(() => play(true), 1800);
+    return () => { clearTimeout(id); clear(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced]);
+
+  const rowState = (i: number): Status => (i < resolved ? ROWS[i].after : ROWS[i].before);
+  const late = ROWS.filter((_, i) => rowState(i) !== "ok").length;
 
   return (
-    <div className="arcane-site min-h-screen overflow-hidden" id="top">
-      <header className="arcane-site-nav">
-        <a href="#top" className="arcane-wordmark" aria-label="Arcane home">
-          <span>A</span>
-          <strong>ARCANE</strong>
-        </a>
-        <nav className="hidden items-center gap-7 md:flex">
-          {t.nav.map((item, index) => (
-            <a href={["#system", "#showcases", "#work"][index]} key={item}>
-              {item}
-            </a>
-          ))}
-        </nav>
-        <div className="arcane-nav-actions">
-          <div className="arcane-language" role="group" aria-label="Language switcher">
-            <button className={language === "sk" ? "active" : ""} onClick={() => setLanguage("sk")}>
-              SK
-            </button>
-            <button className={language === "en" ? "active" : ""} onClick={() => setLanguage("en")}>
-              EN
-            </button>
-          </div>
-          <a href="#contact" className="arcane-nav-cta">
-            {t.navCta} <ArrowUpRight />
-          </a>
+    <div className="stmt-wrap">
+    <figure className="stmt" aria-label={t.title}>
+      <header className="stmt-head">
+        <div>
+          <p className="stmt-title">{t.title}</p>
+          <p className="stmt-co">{t.company} <span>({t.sample})</span></p>
+          <p className="stmt-meta">{t.foot}</p>
+        </div>
+        <div className="stmt-score">
+          <span className="lbl">{t.score}</span>
+          <span className="val num"><AnimatedCounter value={score} locale="en-US" suffix="%" /></span>
+          <span className="bar" aria-hidden="true"><i style={{ width: `${score}%` }} /></span>
+          <span className="sr-only">{late} / {ROWS.length}</span>
         </div>
       </header>
+      <table className="stmt-table">
+        <thead>
+          <tr>{t.cols.map((c, i) => <th key={c} className={i >= 2 ? "r" : ""}>{c}</th>)}</tr>
+        </thead>
+        <tbody>
+          {ROWS.map((r, i) => {
+            const s = rowState(i);
+            return (
+              <tr key={r.code} className={s === "ok" && i < resolved && r.before !== "ok" ? "is-fixed" : ""}>
+                <td><span className="code">{r.code}</span>{ROW_NAMES[lang][i]}</td>
+                <td>{r.site}</td>
+                <td className="r num">{i < resolved ? r.dueAfter : r.due}</td>
+                <td className="r"><span className={"st st-" + s}>{t.status[s]}</span></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <footer className="stmt-foot">
+        <div className="seg" role="group" aria-label={t.title}>
+          <button type="button" aria-pressed={!after} onClick={() => play(false)}>{t.before}</button>
+          <button type="button" aria-pressed={after} onClick={() => play(true)}>{t.after}</button>
+        </div>
+      </footer>
+    </figure>
+    <ToastStack contained position="bottom-right" visibleToasts={3} hotkey={false} label={t.title} className="stmt-toasts" />
+    </div>
+  );
+}
 
-      <main>
-        <section className="arcane-hero">
-          <div className="arcane-grid" />
-          <div className="arcane-orbit arcane-orbit-one" />
-          <div className="arcane-orbit arcane-orbit-two" />
-          <div className="arcane-hero-copy">
-            <p className="arcane-eyebrow">
-              <span /> {t.kicker}
-            </p>
-            <h1>
-              {t.heroTitle}
-              <br />
-              <em>{t.heroAccent}</em>
-            </h1>
-            <p className="arcane-hero-text">{t.heroText}</p>
-            <div className="arcane-hero-actions">
-              <a href="#system" className="arcane-button arcane-button-solid">
-                {t.primary} <ArrowRight />
-              </a>
-              <a href="#showcases" className="arcane-button arcane-button-quiet">
-                {t.secondary} <ArrowDown />
-              </a>
-            </div>
-            <div className="arcane-hero-proof">
-              <span>
-                <Check /> SK / EN
-              </span>
-              <span>
-                <Check /> 24/7 operation
-              </span>
-              <span>
-                <Check /> Built in Slovakia
-              </span>
-            </div>
+function Contact({ lang }: { lang: Lang }) {
+  const t = copy[lang];
+  const [sent, setSent] = useState(false);
+  function submit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const subject = encodeURIComponent(`${lang === "sk" ? "Pilotný audit" : "Pilot audit"} – ${f.get("company")}`);
+    const body = encodeURIComponent(
+      [
+        `${t.form.name}: ${f.get("name")}`,
+        `${t.form.email}: ${f.get("email")}`,
+        `${t.form.company}: ${f.get("company")}`,
+        `${t.form.sites}: ${f.get("sites")}`,
+        `${t.form.role}: ${f.get("role")}`,
+        "",
+        String(f.get("message") || ""),
+      ].join("\n"),
+    );
+    window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
+    setSent(true);
+  }
+  const sel = (name: string, label: string, opts: string[], def: string) => (
+    <Field className="sui-field">
+      <FieldLabel>{label}</FieldLabel>
+      <Select name={name} defaultValue={def} items={opts.map((o) => ({ label: o, value: o }))}>
+        <SelectTrigger size="lg" className="w-full"><SelectValue /></SelectTrigger>
+        <SelectPopup className="sui-popup">{opts.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectPopup>
+      </Select>
+    </Field>
+  );
+  return (
+    <form className="form sui" onSubmit={submit}>
+      <Field className="sui-field"><FieldLabel>{t.form.name}</FieldLabel><Input name="name" required autoComplete="name" size="lg" /></Field>
+      <Field className="sui-field"><FieldLabel>{t.form.email}</FieldLabel><Input name="email" type="email" required autoComplete="email" size="lg" /></Field>
+      <Field className="sui-field"><FieldLabel>{t.form.company}</FieldLabel><Input name="company" required autoComplete="organization" size="lg" /></Field>
+      <SitesField lang={lang} />
+      <div className="wide">{sel("role", t.form.role, t.form.roleOpts, t.form.roleOpts[0])}</div>
+      <Field className="sui-field wide"><FieldLabel>{t.form.message}</FieldLabel><Textarea name="message" id="contact-message" rows={4} /></Field>
+      <div className="wide form-end">
+        <Button type="submit" size="lg" className="sui-submit">{t.form.submit}</Button>
+        {sent && <p className="sent" role="status">{t.form.sent} <a href={`mailto:${EMAIL}`}>{EMAIL}</a>.</p>}
+      </div>
+    </form>
+  );
+}
+
+export default function App() {
+  const [lang, setLang] = useState<Lang>(() => (typeof navigator !== "undefined" && !navigator.language.startsWith("sk") && !navigator.language.startsWith("cs") ? "en" : "sk"));
+  const t = copy[lang];
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+
+  return (
+    <ToastStackProvider duration={3200}>
+      <div className="dark">
+        <DitherGradient className="dither" from="--dark" mid="--dark" to="--accent" />
+        <nav className="nav wrap" aria-label="Main">
+          <a className="mark" href="#top" aria-label="Arcane">Arcane</a>
+          <div className="nav-links">
+            <a href="#audit">{t.nav.audit}</a>
+            <a href="#product">{t.nav.product}</a>
+            <a href="#process">{t.nav.process}</a>
+            <a href="#contact">{t.nav.contact}</a>
           </div>
-          <div className="arcane-live-card" aria-label="Live system status">
-            <div className="arcane-live-head">
-              <span>
-                <i /> {t.live}
-              </span>
-              <span>VOICE / 01</span>
-            </div>
-            <div className="arcane-wave" aria-hidden="true">
-              {Array.from({ length: 38 }).map((_, index) => (
-                <i
-                  key={index}
-                  style={
-                    {
-                      "--bar": `${18 + ((index * 31) % 70)}%`,
-                      "--delay": `${index * -0.04}s`,
-                    } as React.CSSProperties
-                  }
-                />
+          <div className="nav-end">
+            <div className="lang" role="group" aria-label="Language">
+              {(["sk", "en"] as Lang[]).map((l) => (
+                <button key={l} type="button" aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>
               ))}
             </div>
-            <div className="arcane-live-foot">
-              <span>{t.liveStat}</span>
-              <strong>0.8s</strong>
-            </div>
-            <div className="arcane-live-route">
-              <span /> Bratislava <ArrowRight /> Europe
-            </div>
+            <a className="btn btn-paper btn-sm" href="#contact">{t.navCta}</a>
           </div>
-          <p className="arcane-scroll-note">SCROLL TO ENTER THE SYSTEM</p>
-        </section>
+        </nav>
 
-        <section id="system" className="arcane-simulator-section">
-          <div className="arcane-section-intro">
-            <p className="arcane-index">01 / LIVE OPERATION</p>
-            <h2>
-              {t.systemLabel}
-              <br />
-              {t.systemTitle}
-            </h2>
-            <p>{t.systemText}</p>
-          </div>
-          <div className="arcane-simulator">
-            <div className="arcane-vertical-tabs">
-              <button className="active">
-                <span>01</span> {language === "sk" ? "Servis a rezervácie" : "Service and booking"}
-              </button>
-              <button>
-                <span>02</span> {language === "sk" ? "Kvalifikácia leadov" : "Lead qualification"}
-              </button>
-              <button>
-                <span>03</span> {language === "sk" ? "Podpora zákazníkov" : "Customer support"}
-              </button>
+        <header className="hero wrap" id="top">
+          <div className="hero-copy">
+            <h1>{t.heroTitle}</h1>
+            <p className="lede">{t.heroText}</p>
+            <div className="ctas">
+              <a className="btn btn-paper" href="#contact">{t.heroCta}</a>
+              <a className="btn btn-line" href="#process">{t.heroSecondary}</a>
             </div>
-            <div className="arcane-call-console">
-              <div className="arcane-console-top">
-                <div>
-                  <span className={callStage ? "arcane-pulse" : ""} /> INCOMING / VOICE AGENT
-                </div>
-                <div>{callStage ? "00:03" : "READY"}</div>
-              </div>
-              <div className="arcane-conversation">
-                {!callStage ? (
-                  <button className="arcane-start-call" onClick={startCall}>
-                    <span>
-                      <PhoneCall />
-                    </span>
-                    <strong>{t.tryIt}</strong>
-                    <small>{t.noMic}</small>
-                  </button>
-                ) : (
-                  <>
-                    <div className={`arcane-message caller ${callStage >= 1 ? "shown" : ""}`}>
-                      <span>{t.caller}</span>
-                      <p>“{call.caller}”</p>
-                    </div>
-                    <div className={`arcane-message agent ${callStage >= 2 ? "shown" : ""}`}>
-                      <span>{t.agent}</span>
-                      <p>“{call.reply}”</p>
-                    </div>
-                    <div className={`arcane-outcome ${callStage >= 3 ? "shown" : ""}`}>
-                      <span>
-                        <Check />
-                      </span>
-                      <div>
-                        <small>{t.outcome}</small>
-                        <strong>{call.outcome}</strong>
-                        <p>
-                          {language === "sk"
-                            ? "Termín overený · CRM aktualizované"
-                            : "Schedule checked · CRM updated"}
-                        </p>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-              <div className="arcane-console-bottom">
-                <span>
-                  <Workflow /> {language === "sk" ? "Workflow beží" : "Workflow running"}
-                </span>
-                {callStage ? (
-                  <button onClick={() => setCallStage(0)}>{t.reset}</button>
-                ) : (
-                  <span>ARCANE INFRASTRUCTURE</span>
-                )}
-              </div>
-            </div>
+            <p className="hero-note">{t.heroNote}</p>
           </div>
-        </section>
+          <Statement lang={lang} />
+        </header>
 
-        <section id="showcases" className="arcane-showcase-section">
-          <div className="arcane-section-intro arcane-section-intro-light">
-            <p className="arcane-index">{t.showcasesLabel}</p>
-            <h2>{t.showcasesTitle}</h2>
-            <p>{t.showcasesText}</p>
+        <section className="stakes wrap" aria-label="Context">
+          {t.stakes.map(([k, v]) => (
+            <div key={k}><p className="stake-k">{k}</p><p className="stake-v">{v}</p></div>
+          ))}
+        </section>
+      </div>
+
+      <main className="paper">
+        <ReadinessCheck lang={lang} />
+        <section className="wrap section" id="audit">
+          <div className="sec-head">
+            <h2>{t.offerTitle}</h2>
+            <p>{t.offerText}</p>
           </div>
-          <div className="arcane-capability-grid">
-            {t.capabilities.map(({ icon: Icon, tag, title, text, accent }) => (
-              <article className={`arcane-capability-card ${accent}`} key={title}>
-                <div className="arcane-capability-icon">
-                  <Icon />
-                </div>
-                <p className="arcane-index">{tag}</p>
-                <h3>{title}</h3>
-                <p>{text}</p>
-                <a href="#contact">
-                  {language === "sk" ? "Chcem sa dozvedieť viac" : "Explore this"} <ArrowUpRight />
-                </a>
+          <div className="offers">
+            {t.offers.map((o) => (
+              <article className="offer" key={o.name}>
+                <header>
+                  <p className="kind">{o.kind}</p>
+                  <h3>{o.name}</h3>
+                  <p className="lead">{o.lead}</p>
+                </header>
+                <dl>
+                  {o.terms.map(([k, v]) => (<div key={k}><dt>{k}</dt><dd>{v}</dd></div>))}
+                </dl>
+                <a className="btn btn-ink" href="#contact">{t.heroCta}</a>
               </article>
             ))}
           </div>
         </section>
 
-        <section className="arcane-infrastructure-section">
-          <div className="arcane-infra-visual">
-            <div className="arcane-terminal">
-              <div className="arcane-terminal-bar">
-                <span />
-                <span />
-                <span />
-                <small>arcane / infrastructure</small>
-              </div>
-              <div className="arcane-terminal-body">
-                <p>
-                  <span>$</span> arcane status --all
-                </p>
-                <p className="terminal-green">
-                  ● voice-agent <b>operational</b>
-                </p>
-                <p className="terminal-green">
-                  ● support-bot <b>operational</b>
-                </p>
-                <p className="terminal-green">
-                  ● website-stack <b>ready</b>
-                </p>
-                <p>
-                  <span>$</span> your business <i>connected</i>
-                </p>
-              </div>
-            </div>
-            <div className="arcane-infra-badge">
-              <TerminalSquare /> BUILT / RUN / IMPROVE
-            </div>
-          </div>
-          <div className="arcane-infra-copy">
-            <p className="arcane-index">{t.infrastructureLabel}</p>
-            <h2>{t.infrastructureTitle}</h2>
-            <p>{t.infrastructureText}</p>
-            <ul>
-              {t.infraPoints.map((point) => (
-                <li key={point}>
-                  <Check /> {point}
-                </li>
-              ))}
-            </ul>
-            <a href="#contact" className="arcane-button arcane-button-solid">
-              {t.migration} <ArrowRight />
-            </a>
-          </div>
-        </section>
-
-        <section id="work" className="arcane-work-section">
-          <div className="arcane-section-intro arcane-section-intro-light">
-            <p className="arcane-index">{t.workLabel}</p>
-            <h2>{t.workTitle}</h2>
-          </div>
-          <div className="arcane-principles">
-            {t.steps.map(([number, title, text]) => (
-              <article key={number}>
-                <span>{number}</span>
-                <h3>{title}</h3>
-                <p>{text}</p>
+        <section className="wrap section" id="process">
+          <div className="sec-head"><h2>{t.processTitle}</h2></div>
+          <StickyScrollCards
+            className="process-stack"
+            items={t.process.map(([d, h, p], i) => (
+              <article className="day-card" key={d}>
+                <p className="day num">{d}</p>
+                <h3>{h}</h3>
+                <p>{p}</p>
+                <span className="day-count num" aria-hidden="true">{i + 1}/{t.process.length}</span>
               </article>
             ))}
-          </div>
-          <div className="arcane-proof-strip">
-            <span>{language === "sk" ? "Jeden partner" : "One partner"}</span>
-            <i />
-            <span>{language === "sk" ? "Jeden zodpovedný systém" : "One accountable system"}</span>
-            <i />
-            <span>
-              {language === "sk" ? "Od prvého hovoru po výsledok" : "From first ring to outcome"}
-            </span>
-          </div>
+          />
         </section>
 
-        <section id="contact" className="arcane-contact-section">
-          <div className="arcane-contact-heading">
-            <p className="arcane-index">{t.contactLabel}</p>
-            <h2>{t.contactTitle}</h2>
-            <p>{t.contactText}</p>
-            <div className="arcane-contact-meta">
-              <span>Bratislava · Slovakia</span>
-              <span>Serving Central Europe</span>
-              <span>Adam & Greg · Founders</span>
+        <section className="wrap section product" id="product">
+          <div className="product-copy">
+            <h2>{t.productTitle}</h2>
+            <p>{t.productText}</p>
+            <ul>{t.productPoints.map((x) => <li key={x}>{x}</li>)}</ul>
+          </div>
+          <SplitFlapBoard title={t.board.title} cols={t.board.cols} rows={t.board.rows} caption={t.board.caption} />
+          <ComplianceChart lang={lang} />
+        </section>
+
+        <section className="wrap section" id="for">
+          <div className="sec-head"><h2>{t.forTitle}</h2></div>
+          <Industries lang={lang} />
+          <div className="aside">
+            <div>
+              <h3>{t.partnerTitle}</h3>
+              <p>{t.partnerText}</p>
+              <a className="link" href="#contact">{t.partnerCta}</a>
+            </div>
+            <div>
+              <h3>{t.alsoTitle}</h3>
+              <p>{t.alsoText}</p>
             </div>
           </div>
-          <form className="arcane-contact-form" onSubmit={submitForm}>
-            {submitted ? (
-              <div className="arcane-form-success">
-                <span>
-                  <Check />
-                </span>
-                <h3>{t.formSuccess}</h3>
-                <p>
-                  {language === "sk"
-                    ? "Ak sa e-mail neotvoril, napíšte nám priamo na adam.bencic1@gmail.com."
-                    : "If your email client did not open, write to adam.bencic1@gmail.com directly."}
-                </p>
-              </div>
-            ) : (
-              <>
-                <label>
-                  {t.formName}
-                  <input required name="name" placeholder="Adam Bencic" />
-                </label>
-                <label>
-                  {t.formEmail}
-                  <input required type="email" name="email" placeholder="you@company.com" />
-                </label>
-                <label>
-                  {t.formCompany}
-                  <input name="company" placeholder="company.com" />
-                </label>
-                <label>
-                  {t.formNeed}
-                  <div className="arcane-select-wrap">
-                    <select
-                      required
-                      name="need"
-                      value={selectedNeed}
-                      onChange={(event) => setSelectedNeed(event.target.value)}
-                    >
-                      <option value="">
-                        {language === "sk" ? "Vyberte možnosť" : "Select an option"}
-                      </option>
-                      {t.formOptions.map((option) => (
-                        <option key={option}>{option}</option>
-                      ))}
-                    </select>
-                    <ChevronDown />
-                  </div>
-                </label>
-                <label className="arcane-form-wide">
-                  {t.formMessage}
-                  <textarea
-                    required
-                    name="message"
-                    rows={4}
-                    placeholder={
-                      language === "sk"
-                        ? "Napr. nestíhame zdvíhať telefóny..."
-                        : "For example, we miss too many calls..."
-                    }
-                  />
-                </label>
-                <button type="submit" className="arcane-button arcane-button-solid">
-                  {t.formSubmit} <Send />
-                </button>
-              </>
-            )}
-          </form>
         </section>
       </main>
-      <footer className="arcane-footer">
-        <a href="#top" className="arcane-wordmark">
-          <span>A</span>
-          <strong>ARCANE</strong>
-        </a>
-        <p>{t.footer}</p>
-        <span>© {new Date().getFullYear()} Arcane Infrastructure</span>
-      </footer>
+
+      <section className="dark contact sui-dark" id="contact">
+        <div className="wrap contact-in">
+          <div>
+            <h2>{t.contactTitle}</h2>
+            <p className="lede">{t.contactText}</p>
+            <p className="direct"><a href={`mailto:${EMAIL}`}>{EMAIL}</a></p>
+          </div>
+          <Contact lang={lang} />
+        </div>
+        <footer className="wrap foot">
+          <span className="mark">Arcane</span>
+          <span>{t.footer}</span>
+          <p>{t.footerNote}</p>
+        </footer>
+      </section>
+    </ToastStackProvider>
+  );
+}
+
+function Industries({ lang }: { lang: Lang }) {
+  const t = copy[lang];
+  const [active, setActive] = useState("0");
+  const tabs = t.forItems.map(([label], i) => ({ label, value: String(i) }));
+  const [, sub, equipment, finding] = t.forItems[Number(active)];
+  return (
+    <div className="industries">
+      <div className="industry-scroll"><VelocityTabs tabs={tabs} value={active} onValueChange={setActive} aria-label={t.forTitle}
+        className="industry-tabs" indicatorClassName="industry-ind" tabClassName="industry-tab" /></div>
+      <div className="industry-panel" aria-live="polite">
+        <p className="industry-sub">{sub}</p>
+        <div className="industry-cols">
+          <div><h3>{t.forLabels.equipment}</h3><p>{equipment}</p></div>
+          <div><h3>{t.forLabels.finding}</h3><p>{finding}</p></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const CHART = [0.61, 0.64, 0.7, 0.74, 0.79, 0.83, 0.86, 0.9, 0.92, 0.94, 0.96, 0.97, 0.98];
+
+function ComplianceChart({ lang }: { lang: Lang }) {
+  const c = copy[lang].chart;
+  const [colors, setColors] = useState<string[]>(["#d8cfbd", "#17140f"]);
+  useEffect(() => {
+    const cs = getComputedStyle(document.documentElement);
+    setColors([cs.getPropertyValue("--paper-deep").trim() || "#d8cfbd", cs.getPropertyValue("--accent-on-paper").trim() || "#17140f"]);
+  }, []);
+  return (
+    <figure className="chart">
+      <figcaption><h3>{c.title}</h3><p>{c.note}</p></figcaption>
+      <HalftoneAreaChart
+        key={colors.join()}
+        data={CHART.map((value, i) => ({ label: `${c.weeks}${i}`, value }))}
+        height={170}
+        colors={colors}
+        format={{ style: "percent", maximumFractionDigits: 0 }}
+        locales={lang === "sk" ? "sk-SK" : "en-GB"}
+        label={c.title}
+        seriesName={c.title}
+        vsLabel={c.vs}
+      />
+    </figure>
+  );
+}
+
+function ReadinessCheck({ lang }: { lang: Lang }) {
+  const c = copy[lang].check;
+  const [ans, setAns] = useState<(boolean | null)[]>([null, null, null, null, null]);
+  const answered = ans.filter((a) => a !== null).length;
+  const score = ans.filter((a) => a === true).length;
+  const done = answered === 5;
+  const tier = score <= 2 ? 0 : score <= 4 ? 1 : 2;
+  const set = (i: number, v: string) => setAns((a) => a.map((x, j) => (j === i ? v === "y" : x)));
+  const use = () => {
+    const el = document.getElementById("contact-message") as HTMLTextAreaElement | null;
+    if (el) el.value = c.summary(c.qs.filter((_, i) => ans[i]), c.qs.filter((_, i) => ans[i] === false));
+    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => el?.focus({ preventScroll: true }), 600);
+  };
+  return (
+    <section className="wrap section check" id="check">
+      <div className="check-side">
+        <h2>{c.title}</h2>
+        <p className="check-lead">{c.lead}</p>
+        <div className={"check-result" + (done ? " t" + tier : "")} aria-live="polite">
+          <p className="check-score num"><span>{score}</span> {c.of}</p>
+          {done ? (
+            <>
+              <h3>{c.tiers[tier][0]}</h3>
+              <p>{c.tiers[tier][1]}</p>
+              <button type="button" className="btn btn-ink" onClick={use}>{c.use}</button>
+            </>
+          ) : (
+            <p className="check-wait">{answered ? c.partial(answered) : c.empty}</p>
+          )}
+        </div>
+      </div>
+      <ol className="check-qs">
+        {c.qs.map((q, i) => (
+          <li key={q} className={ans[i] === false ? "is-no" : ans[i] ? "is-yes" : ""}>
+            <p>{q}</p>
+            <VelocityTabs aria-label={q} value={ans[i] === null ? "" : ans[i] ? "y" : "n"} onValueChange={(v) => set(i, v)}
+              tabs={[{ label: c.yes, value: "y" }, { label: c.no, value: "n" }]}
+              className="yn" indicatorClassName="yn-ind" tabClassName="yn-tab" />
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function SitesField({ lang }: { lang: Lang }) {
+  const t = copy[lang];
+  const [n, setN] = useState(3);
+  return (
+    <div className="sui-field sites-field">
+      <div className="sites-head"><span>{t.form.sites}</span><output className="num">{t.sitesHint(n)}</output></div>
+      <input type="hidden" name="sites" value={t.sitesHint(n)} />
+      <SpringSlider aria-label={t.form.sites} min={1} max={30} step={1} value={n} onValueChange={setN}
+        ticks={false} renderTooltip={(x) => t.sitesHint(x)} valueText={(x) => t.sitesHint(x)} className="sites-slider" />
     </div>
   );
 }
