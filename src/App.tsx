@@ -71,10 +71,13 @@ function Statement({ lang }: { lang: Lang }) {
         <div>
           <p className="stmt-title">{t.title}</p>
           <p className="stmt-co">{t.company} <span>({t.sample})</span></p>
+          <p className="stmt-meta">{t.foot}</p>
         </div>
-        <div className="seg" role="group" aria-label={t.title}>
-          <button type="button" aria-pressed={!after} onClick={() => play(false)}>{t.before}</button>
-          <button type="button" aria-pressed={after} onClick={() => play(true)}>{t.after}</button>
+        <div className="stmt-score">
+          <span className="lbl">{t.score}</span>
+          <span className="val num"><AnimatedCounter value={score} locale="en-US" suffix="%" /></span>
+          <span className="bar" aria-hidden="true"><i style={{ width: `${score}%` }} /></span>
+          <span className="sr-only">{late} / {ROWS.length}</span>
         </div>
       </header>
       <table className="stmt-table">
@@ -96,13 +99,10 @@ function Statement({ lang }: { lang: Lang }) {
         </tbody>
       </table>
       <footer className="stmt-foot">
-        <span>{t.foot}</span>
-        <span className="stmt-score">
-          <span className="lbl">{t.score}</span>
-          <span className="val num"><AnimatedCounter value={score} locale="en-US" suffix="%" /></span>
-          <span className="bar" aria-hidden="true"><i style={{ width: `${score}%` }} /></span>
-          <span className="sr-only">{late} / {ROWS.length}</span>
-        </span>
+        <div className="seg" role="group" aria-label={t.title}>
+          <button type="button" aria-pressed={!after} onClick={() => play(false)}>{t.before}</button>
+          <button type="button" aria-pressed={after} onClick={() => play(true)}>{t.after}</button>
+        </div>
       </footer>
     </figure>
     <ToastStack contained position="bottom-right" visibleToasts={3} hotkey={false} label={t.title} className="stmt-toasts" />
