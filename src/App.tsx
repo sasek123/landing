@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { copy, ROWS, ROW_NAMES, type Lang, type Status } from "./content";
 
-const EMAIL = "adam.bencic1@gmail.com";
+const EMAIL = "admin@arcane-equity.com";
 const SCORE = { before: 61, after: 98 };
 
 function useReducedMotion() {
