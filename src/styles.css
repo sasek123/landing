@@ -59,7 +59,7 @@ img { max-width: 100%; }
 
 /* hero */
 .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.02fr); gap: clamp(32px, 5vw, 72px); align-items: center; padding-top: clamp(32px, 6vw, 88px); padding-bottom: clamp(48px, 7vw, 96px); }
-.hero h1 { font: 700 clamp(40px, 5vw, 70px)/1.02 var(--display); letter-spacing: -0.025em; text-wrap: balance; }
+.hero h1 { font: 700 clamp(36px, 4.3vw, 60px)/1.04 var(--display); letter-spacing: -0.025em; text-wrap: balance; }
 .lede { margin-top: 26px; max-width: 34em; color: var(--on-dark-2); font-size: clamp(17px, 1.4vw, 19px); }
 .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
 .hero-note { margin-top: 18px; font-size: 14px; color: var(--on-dark-2); }
