@@ -80,23 +80,8 @@
   --gut: clamp(20px, 4vw, 48px);
 }
 
-/* Versions. A: safety yellow (inspection tags), B: cobalt (banking),
-   C: navy + mint (fintech), D: light parchment + signal red-orange. */
-[data-v="b"] { --accent: #3d5afe; --on-accent: #fff; --accent-on-paper: #2c45e0; }
-[data-v="c"] {
-  --dark: #0a1426; --dark-2: #0f1c33; --on-dark: #eef1f5; --on-dark-2: #9aa6b8; --on-dark-3: #6b7890;
-  --rule-dark: #1f2c44; --line-dark: #34425c; --card: #f6f7f9; --card-2: #e6e9ee; --card-mute: #6b7487;
-  --paper: #eef1f5; --paper-deep: #e1e6ed; --ink: #0a1426; --ink-2: #44506a; --rule: #cfd6e0;
-  --glow: rgba(46, 229, 157, .14);
-  --accent: #2ee59d; --on-accent: #04130c; --accent-on-paper: #0a8f5c;
-}
-[data-v="d"] {
-  --dark: #e8e0d0; --dark-2: #f3eee4; --on-dark: #17140f; --on-dark-2: #5b5447; --on-dark-3: #7d7564;
-  --rule-dark: #c9bea9; --line-dark: #9f9583; --card: #fbf9f4; --card-2: #ece5d7; --card-mute: #7d7564;
-  --paper: #ffffff; --paper-deep: #f1ece2; --hi: #000;
-  --glow: rgba(23, 20, 15, .16);
-  --accent: #ff4a1c; --on-accent: #000; --accent-on-paper: #d63a10;
-}
+/* Cobalt accent: banking blue, kept clear of the red/amber/green status colours. */
+:root { --accent: #3d5afe; --on-accent: #fff; --accent-on-paper: #2c45e0; }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
@@ -180,7 +165,6 @@ tr.is-fixed td { animation: settle .6s ease-out; }
 .stakes > div + div { padding-left: 28px; border-left: 1px solid var(--rule-dark); }
 .stake-k { font: 700 22px/1.2 var(--display); letter-spacing: -0.01em; }
 .stakes > div:first-child .stake-k { color: var(--accent); }
-[data-v="d"] .stakes > div:first-child .stake-k { color: var(--accent-on-paper); }
 .stake-v { margin-top: 8px; font-size: 15px; color: var(--on-dark-2); max-width: 30em; }
 
 .stakes::before, .foot::before { content: ""; position: absolute; top: 0; left: var(--gut); right: var(--gut); border-top: 1px solid var(--rule-dark); }
@@ -294,13 +278,6 @@ tr.is-fixed td { animation: settle .6s ease-out; }
   .frame-kpis div:nth-child(n+3) { border-top: 1px solid #222; }
 }
 
-/* review-only version switcher (preview deployments) */
-.vswitch { position: fixed; left: 16px; bottom: 16px; z-index: 50; display: flex; align-items: center; gap: 4px; padding: 6px; border-radius: 999px; background: #fff; color: #000; box-shadow: 0 8px 30px rgba(0,0,0,.35); font: 600 13px/1 var(--text); }
-.vswitch span { padding: 0 8px 0 6px; color: #555; }
-.vswitch button { border: 0; cursor: pointer; border-radius: 999px; padding: 8px 12px; font: 600 13px/1 var(--text); background: #eee; color: #000; display: inline-flex; align-items: center; gap: 6px; }
-.vswitch button i { width: 10px; height: 10px; border-radius: 50%; }
-.vswitch button[aria-pressed="true"] { background: #000; color: #fff; }
-
 /* ---- v2: vendored components ---------------------------------------- */
 
 /* Componentry dither gradient behind the hero, fading in from the right */
@@ -308,7 +285,6 @@ tr.is-fixed td { animation: settle .6s ease-out; }
 .dither { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; opacity: .55;
   -webkit-mask-image: radial-gradient(120% 90% at 85% 55%, #000 0%, rgba(0,0,0,.55) 35%, transparent 70%);
           mask-image: radial-gradient(120% 90% at 85% 55%, #000 0%, rgba(0,0,0,.55) 35%, transparent 70%); }
-[data-v="d"] .dither { opacity: .35; }
 
 /* Arc UI tokens, mapped to this page */
 .stmt-wrap { position: relative;
@@ -350,8 +326,7 @@ tr.is-fixed td { animation: settle .6s ease-out; }
 .flap::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #0b0b0b; }
 @keyframes flap { from { transform: perspective(200px) rotateX(-70deg); filter: brightness(1.6); } to { transform: none; filter: none; } }
 .tone-late .flap { color: #ff7b6b; }
-.tone-soon .flap { color: var(--accent); }
-[data-v="d"] .tone-soon .flap, [data-v="b"] .tone-soon .flap { color: #f2c14e; }
+.tone-soon .flap { color: #f2c14e; }
 .tone-ok .flap { color: #7fc796; }
 .board-cap { margin-top: 12px; font-size: 12px; color: #6f695f; }
 

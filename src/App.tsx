@@ -164,52 +164,15 @@ function Contact({ lang }: { lang: Lang }) {
   );
 }
 
-const VERSIONS = [
-  { id: "a", name: "A", color: "#ffd60a" },
-  { id: "b", name: "B", color: "#3d5afe" },
-  { id: "c", name: "C", color: "#2ee59d" },
-  { id: "d", name: "D", color: "#ff4a1c" },
-];
-
-function useVersion() {
-  const [v, setV] = useState(() => {
-    const q = new URLSearchParams(window.location.search).get("v");
-    return VERSIONS.some((x) => x.id === q) ? (q as string) : "a";
-  });
-  useEffect(() => {
-    document.documentElement.dataset.v = v;
-    const url = new URL(window.location.href);
-    url.searchParams.set("v", v);
-    window.history.replaceState(null, "", url);
-  }, [v]);
-  const show = /git-|localhost|127\.0\.0\.1/.test(window.location.hostname) || new URLSearchParams(window.location.search).has("review");
-  return { v, setV, show };
-}
-
-function VersionSwitch({ v, setV }: { v: string; setV: (x: string) => void }) {
-  return (
-    <div className="vswitch" role="group" aria-label="Version">
-      <span>Verzia</span>
-      {VERSIONS.map((x) => (
-        <button key={x.id} type="button" aria-pressed={v === x.id} onClick={() => setV(x.id)}>
-          <i style={{ background: x.color }} />{x.name}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export default function App() {
-  const ver = useVersion();
   const [lang, setLang] = useState<Lang>(() => (typeof navigator !== "undefined" && !navigator.language.startsWith("sk") && !navigator.language.startsWith("cs") ? "en" : "sk"));
   const t = copy[lang];
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
   return (
     <ToastStackProvider duration={3200}>
-      {ver.show && <VersionSwitch v={ver.v} setV={ver.setV} />}
       <div className="dark">
-        <DitherGradient className="dither" from="--dark" mid="--dark" to="--accent" version={ver.v} />
+        <DitherGradient className="dither" from="--dark" mid="--dark" to="--accent" />
         <nav className="nav wrap" aria-label="Main">
           <a className="mark" href="#top" aria-label="Arcane">Arcane</a>
           <div className="nav-links">
@@ -314,7 +277,7 @@ export default function App() {
         </section>
       </main>
 
-      <section className={"dark contact" + (ver.v === "d" ? "" : " sui-dark")} id="contact">
+      <section className="dark contact sui-dark" id="contact">
         <div className="wrap contact-in">
           <div>
             <h2>{t.contactTitle}</h2>
@@ -357,12 +320,11 @@ const CHART = [0.61, 0.64, 0.7, 0.74, 0.79, 0.83, 0.86, 0.9, 0.92, 0.94, 0.96, 0
 
 function ComplianceChart({ lang }: { lang: Lang }) {
   const c = copy[lang].chart;
-  const v = useVersion().v;
   const [colors, setColors] = useState<string[]>(["#d8cfbd", "#17140f"]);
   useEffect(() => {
     const cs = getComputedStyle(document.documentElement);
     setColors([cs.getPropertyValue("--paper-deep").trim() || "#d8cfbd", cs.getPropertyValue("--accent-on-paper").trim() || "#17140f"]);
-  }, [v]);
+  }, []);
   return (
     <figure className="chart">
       <figcaption><h3>{c.title}</h3><p>{c.note}</p></figcaption>
